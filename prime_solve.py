@@ -54,10 +54,10 @@ while True:
         cal = []
         error_counter = 0
         while n >= 2:
-            for j in prime_f:
-                if n % j == 0:
-                    cal.append(j)
-                    n /= j
+            for i in prime_f:
+                if n % i == 0:
+                    cal.append(i)
+                    n /= i
                     error_counter = 0
                 elif error_counter > 16:
                     break

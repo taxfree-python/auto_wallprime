@@ -34,3 +34,12 @@ def auto_click_insane(cal):
         auto.click(160,640)
     elif cal == 53:
         auto.click(210,640)
+
+def stop_click():
+    auto.click(330,85)
+
+def resume_click():
+    auto.click(180,430)
+
+def close_tab():
+    auto.click(18,37)

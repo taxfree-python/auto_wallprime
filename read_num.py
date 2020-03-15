@@ -15,6 +15,8 @@ def read_num():
         lang='eng',
         builder = pyocr.builders.TextBuilder(tesseract_layout=7)
     )
+    if number == 7:
+        number = 1
     try:
         int(number.replace(' ',''))
         return(int(number.replace(' ','')))

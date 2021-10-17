@@ -4,7 +4,6 @@ from random import randint
 from time import sleep
 import re
 from PIL import Image,ImageOps,ImageFilter
-import PIL
 import pyocr
 import pyautogui as auto
 

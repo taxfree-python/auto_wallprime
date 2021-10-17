@@ -1,5 +1,4 @@
 #import
-import os
 from random import randint
 from time import sleep
 import re

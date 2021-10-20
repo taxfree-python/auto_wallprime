@@ -107,4 +107,5 @@ class Solver:
             sleep(3.5)
 
 #run
-Solver()
+if __name__ == "__main__":
+    Solver()

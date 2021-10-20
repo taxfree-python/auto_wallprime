@@ -108,4 +108,5 @@ class Solver:
 
 
 #run
-Solver()
+if __name__ == "__main__":
+    Solver()

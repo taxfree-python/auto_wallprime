@@ -98,13 +98,13 @@ class Solver:
             for i in range(16):
                 for _ in range(cal[i]):
                     self.auto_click(i)
-                    sleep(0.05)
+                    sleep(0.04)
             auto.click(300, 600)
 
 
             pass_time = time() - start
             print(pass_time)
-            sleep(3.5)
+            sleep(3.2)
 
 
 #run

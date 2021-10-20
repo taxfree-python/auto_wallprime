@@ -45,11 +45,17 @@ class Solver:
             return (1, ans)
 
 
-    def auto_click(self, pos):
+    def auto_click(self, cal):
         x = [50, 105, 160, 215]
         y = [495, 545, 600, 650]
-        r = randint(-8, 8)
-        auto.click(x[pos % 4] + r, y[pos // 4] + r)
+
+        for i in range(16):
+            for _ in range(cal[i]):
+                r = randint(-8, 8)
+                auto.click(x[i % 4] + r, y[i // 4] + r)
+                sleep(0.05)
+
+        auto.click(300, 600)
 
 
     def pfactorization(self, num):
@@ -86,7 +92,6 @@ class Solver:
             status = ans[0]
             cal = ans[1]
 
-
             if status == 0:
                 print(f'n = {num}, failed pfactorization')
                 sleep(0.1)
@@ -95,15 +100,12 @@ class Solver:
             pass_t = time() - start
             print(pass_t)
 
-            for i in range(16):
-                for _ in range(cal[i]):
-                    self.auto_click(i)
-                    sleep(0.05)
-            auto.click(300, 600)
+            self.auto_click(cal)
 
 
             pass_time = time() - start
             print(pass_time)
+
             sleep(3.5)
 
 

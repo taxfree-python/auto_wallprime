@@ -1,5 +1,4 @@
 #import
-import os
 from random import randint, choice
 from time import sleep, time
 import re
@@ -54,19 +53,21 @@ class Solver:
 
     def pfactorization(self, num):
         fact = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53]
-        cal = []
-        for f in fact:
+        dic = defaultdict(int)
+
+        for i in range(16):
+            f = fact[i]
             cnt = 0
             while num % f == 0:
                 cnt += 1
                 num //= f
-
-            cal.append(cnt)
+            if cnt != 0:
+                dic[i] = cnt
 
         if num == 1:
-            return (1, cal)
+            return (1, dic)
         else:
-            return (0, cal)
+            return (0, dic)
 
 
     def run(self):
@@ -95,17 +96,14 @@ class Solver:
             pass_t = time() - start
             print(pass_t)
 
-            for i in range(16):
-                for _ in range(cal[i]):
-                    self.auto_click(i)
+            for key in cal.keys():
+                for _ in range(cal[key]):
+                    self.auto_click(key)
                     sleep(0.05)
             auto.click(300, 600)
 
-
             pass_time = time() - start
-            print(pass_time)
             sleep(3.5)
-
 
 #run
 Solver()

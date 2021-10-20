@@ -9,15 +9,55 @@ import pyautogui as auto
 from collections import defaultdict
 
 
-class Solver:
+class create_data:
+
     def __init__(self):
+        self.check_setting_file()
+        global index
+        index = self.read_index()
         self.run()
 
 
-    def read_num(self):
+    def __del__(self):
+        self.write_index_head(ind)
+        print('======================')
+        print(f'next_index = {ind + 1}')
+
+
+    def check_setting_file(self):
+        folders = os.scandir()
+        for folder in folders:
+            if folder.name == 'datum':
+                break
+        else:
+            os.mkdir('datum')
+            os.mkdir('datum/images')
+            with open('datum/number.txt', mode = 'w') as f:
+                f.write('0\n')
+
+
+    def write_index_head(self, num):
+        with open(f'datum/number.txt', mode = 'r+') as f:
+            f.write(f'{num} \n')
+
+    def write_index(self, text):
+        with open(f'datum/number.txt', mode = 'a') as f:
+            f.write(text)
+
+    def read_index(self):
+        with open(f'datum/number.txt') as f:
+            return int(f.readline())
+
+
+    def read_num(self, index):
+        #global pas
+        #start = time()
+
+
         tool = pyocr.get_available_tools()[0]
 
         img = auto.screenshot(region=(175, 490, 480, 225))
+        img.save(f'datum/images/image_{index}.png')
 
         img = img.point(lambda x: x * 1.2).convert('L').point(lambda x: 0 if x < 230 else x)
         img = ImageOps.invert(img)
@@ -68,14 +108,16 @@ class Solver:
         else:
             return (0, cal)
 
-
     def run(self):
+        global ind
+        ind = index
         while True:
             start = time()
 
+            ind += 1
             print('--------------------------')
             auto.click(300,600)
-            res = self.read_num()
+            res = self.read_num(ind)
             num = res[1][res[0] - 1]
 
             if res[0] == 0:
@@ -101,11 +143,11 @@ class Solver:
                     sleep(0.05)
             auto.click(300, 600)
 
+            self.write_index(f'{ind}, {num},\n')
 
             pass_time = time() - start
-            print(pass_time)
+            #print(f'index = {ind}, n = {num}, pass_time = {pass_time} ans = {ans[1]}')
             sleep(3.5)
 
-
 #run
-Solver()
+create_data()

@@ -21,6 +21,7 @@ class Solver:
 
         img = img.point(lambda x: x * 1.2).convert('L').point(lambda x: 0 if x < 230 else x)
         img = ImageOps.invert(img)
+        img.rotate(-3)
 
         num_eng = re.sub(r'\D', '', tool.image_to_string(img, lang = 'eng', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
         num_snum  = re.sub(r'\D', '', tool.image_to_string(img, lang = 'snum', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
@@ -101,11 +102,9 @@ class Solver:
                     sleep(0.05)
             auto.click(300, 600)
 
-
             pass_time = time() - start
             print(pass_time)
             sleep(3.5)
-
 
 #run
 Solver()

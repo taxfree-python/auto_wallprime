@@ -150,4 +150,5 @@ class create_data:
             sleep(3.5)
 
 #run
-create_data()
+if __name__ == "__create_data__":
+    Solver()

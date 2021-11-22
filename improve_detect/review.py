@@ -4,6 +4,7 @@ from read_num import read_num_img, read_num_path
 from PIL import Image
 from multiprocessing import Pool
 import pyocr
+import re
 
 
 class Optimizer:
@@ -16,7 +17,6 @@ class Optimizer:
         with open('datum/correct_num.txt') as f:
             corrects = [int(s[:-1]) for s in f.readlines()]
 
-
         correct = 0
         probably = 0
         wrong = 0
@@ -28,10 +28,9 @@ class Optimizer:
             img = self.comb(original)
             original = Image.fromarray(original)
 
-
-            #ans = read_num_img(original, img)
-            img.show()
-            ans = p.map(read_num_img, [original, img])
+            #img.show()
+            imgs = [original, img]
+            ans = p.map(self.read_num_img, imgs)
 
 
             if ans[1][0] == corrects[i - 1] and ans[1][1] == corrects[i - 1]:
@@ -48,14 +47,14 @@ class Optimizer:
         return f'reslt = {correct}, {probably}, {wrong}'
 
 
-def read_num_img(img):
-    tool = pyocr.get_available_tools()[0]
+    def read_num_img(self, img):
+        tool = pyocr.get_available_tools()[0]
 
-    num_eng = re.sub(r'\D', '', tool.image_to_string(img, lang = 'eng', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
-    num_snum  = re.sub(r'\D', '', tool.image_to_string(img, lang = 'snum', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
+        num_eng = re.sub(r'\D', '', tool.image_to_string(img, lang = 'eng', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
+        num_snum  = re.sub(r'\D', '', tool.image_to_string(img, lang = 'snum', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
 
-    ans = (int(num_eng or 0), int(num_snum or 0))
-    return ans
+        ans = (int(num_eng or 0), int(num_snum or 0))
+        return ans
 
 
     def opt(self, diff):

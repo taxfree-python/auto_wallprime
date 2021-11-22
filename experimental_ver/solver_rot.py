@@ -1,5 +1,4 @@
 #import
-import os
 from random import randint, choice
 from time import sleep, time
 import re
@@ -77,12 +76,13 @@ class Solver:
             print('--------------------------')
             auto.click(300,600)
             res = self.read_num()
-            num = res[1][res[0] - 1]
 
             if res[0] == 0:
                 print('n = 0, failed recognize')
                 continue
 
+
+            num = res[1][res[0] - 1]
             ans = self.pfactorization(num)
             status = ans[0]
             cal = ans[1]

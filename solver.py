@@ -1,5 +1,4 @@
 #import
-import os
 from random import randint, choice
 from time import sleep, time
 import re
@@ -17,7 +16,8 @@ class Solver:
     def read_num(self):
         tool = pyocr.get_available_tools()[0]
 
-        img = auto.screenshot(region=(175, 490, 480, 225))
+        img = Image.open('datum/images/image_16.png')
+        #img = auto.screenshot(region=(175, 490, 480, 225))
 
         img = img.point(lambda x: x * 1.2).convert('L').point(lambda x: 0 if x < 230 else x)
         img = ImageOps.invert(img)
@@ -71,12 +71,15 @@ class Solver:
 
     def run(self):
         while True:
-            start = time()
 
             print('--------------------------')
+            start = time()
             auto.click(300,600)
             res = self.read_num()
             num = res[1][res[0] - 1]
+
+            pass_time = time() - start
+            print(f'full time = {pass_time}')
 
             if res[0] == 0:
                 print('n = 0, failed recognize')
@@ -92,8 +95,6 @@ class Solver:
                 sleep(0.1)
                 continue
 
-            pass_t = time() - start
-            print(pass_t)
 
             for i in range(16):
                 for _ in range(cal[i]):
@@ -102,8 +103,6 @@ class Solver:
             auto.click(300, 600)
 
 
-            pass_time = time() - start
-            print(pass_time)
             sleep(3.5)
 
 

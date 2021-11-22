@@ -38,7 +38,7 @@ class create_data:
 
     def write_index_head(self, num):
         with open(f'datum/number.txt', mode = 'r+') as f:
-            f.write(f'{num} \n')
+            f.write(f'{num}')
 
     def write_index(self, text):
         with open(f'datum/number.txt', mode = 'a') as f:
@@ -56,7 +56,7 @@ class create_data:
 
         tool = pyocr.get_available_tools()[0]
 
-        img = auto.screenshot(region=(175, 490, 480, 225))
+        img = auto.screenshot(region=(180, 498, 478, 225))
         img.save(f'datum/images/image_{index}.png')
 
         img = img.point(lambda x: x * 1.2).convert('L').point(lambda x: 0 if x < 230 else x)
@@ -150,5 +150,5 @@ class create_data:
             sleep(3.5)
 
 #run
-if __name__ == "__create_data__":
-    Solver()
+if __name__ == "__main__":
+    create_data()

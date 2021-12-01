@@ -26,7 +26,7 @@ class Solver:
 
         num = re.sub(r'\D', '', tool.image_to_string(img, lang = f'{lang}', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
 
-        return int(num)
+        return (int(num or 0))
 
     def check(self, ans):
         if ans[0] == 0 and ans[1] == 0:

@@ -25,7 +25,7 @@ class Reviewer:
             ans_snum = p.map(self.read_num_img_snum_0, index)
 
         if method == 1:
-            p = Pool(2)
+            p = Pool(8)
             index = [(num, i, param) for i in range(length)]
             ans_eng = p.map(self.read_num_img_eng_1, index)
             ans_snum = p.map(self.read_num_img_snum_1, index)
@@ -50,7 +50,7 @@ class Reviewer:
             ans_eng = p.map(self.read_num_img_eng_5, index)
             ans_snum = p.map(self.read_num_img_snum_5, index)
         elif method == 6:
-            p = Pool(8)
+            p = Pool(2)
             index = [(num, i, param) for i in range(length)]
             ans_eng = p.map(self.read_num_img_eng_6, index)
             ans_snum = p.map(self.read_num_img_snum_6, index)
@@ -252,8 +252,8 @@ class Reviewer:
 
 
     def method_5(self, diff, param): #トリミング
-        diff[param[0]:, :param[1]] = [[0, 0, 0]] #black
-        diff[param[2]:, :param[3]] = [[0, 0, 0]] #black
+        diff[165:, :50] = [[0, 0, 0]] #black
+        diff[0:, :20] = [[0, 0, 0]] #black
 
         diff = Image.fromarray(diff)
         return diff
@@ -269,11 +269,11 @@ class Reviewer:
 
 
 
-method = 6
+method = 5
 
 if __name__ == '__main__':
     rev = Reviewer()
-    for i in range(1,2): #param
+    for i in range(9, 10): #param
         for j in range(1, 6): #dataset
             print(rev.review(method, i, j))
 

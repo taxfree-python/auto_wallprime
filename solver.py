@@ -15,56 +15,71 @@ class Solver:
         self.run()
 
 
-    def read_num_multi(self, param):
+    def read_num(self, inputs):
         tool = pyocr.get_available_tools()[0]
 
-        ret, img = cv2.threshold(param[1], 200, 255, cv2.THRESH_BINARY_INV)
-        x_size = img.shape[0]
-        y_size = img.shape[1]
-
-        img[168:, :45] = [[255, 255, 255]]
-        img[0:, :20] = [[255, 255, 255]]
-
-        #trans = cv2.getRotationMatrix2D((int(x_size / 2), int(y_size / 2)), -3, 0.9)
-        #img = cv2.warpAffine(image, trans, (y_size, x_size), borderValue=(255, 255, 255))
+        ret, img = cv2.threshold(inputs[1], 180, 255, cv2.THRESH_BINARY_INV)
 
         img = Image.fromarray(img)
-        num = int(re.sub(r'\D', '', tool.image_to_string(img, lang = f'{param[0]}', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8))) or 0)
+        num = int(re.sub(r'\D', '', tool.image_to_string(img, lang = f'{inputs[0]}', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8))) or 0)
 
-        if num == 0 or num >= 10**9:
+        if num == 0 or num >= 10 ** 10:
             return (0, (0, [0]))
         else:
+            pfact = self.pfactorization(num)
+            if pfact[0] == 0 and num >= 10 ** 8:
+                if str(num)[0] == '1':
+                    num = int('4' + str(num)[1:])
+                elif str(num)[0] == '3':
+                    num = int('8' + str(num)[1:])
+                elif str(num)[0] == '2':
+                    num = int('3' + str(num)[1:])
+                elif str(num)[0] == '5':
+                    num = int('6' + str(num)[1:])
+            if pfact[0] == 0 and str(num)[0] == '7':
+                num = int(str(num)[1:])
+
             return (num, self.pfactorization(num))
 
 
-    def auto_click(self, pfact):
+    def auto_click(self, pos):
         x = [50, 105, 160, 215]
         y = [495, 545, 600, 650]
         r = randint(-3, 3)
-        auto.click(x[pfact % 4] + r, y[pfact // 4] + r)
+        auto.click(x[pos % 4] + r, y[pos // 4] + r)
 
 
     def check(self, numbers):
         status_1 = numbers[0][1][0]
         status_2 =numbers[1][1][0]
 
-        if status_1 == status_2 and status_1 == 1:
-            return choice((numbers[0][1][1], numbers[1][1][1], numbers[1][1][1]))
-        if status_1 == 1:
+        if status_1 == status_2 and status_1 == 1: #both eng and snum succeeded pfact
+            length = max(len(str(numbers[0][0])), len(str(numbers[1][0])))
+            z = randint(1, 100)
+            if length <= 3:
+                if z <= 12:
+                    return numbers[0][1][1] #return eng
+                else:
+                    return numbers[1][1][1] #return snum
+            elif length <= 6:
+                if z <= 68:
+                    return numbers[0][1][1] #return eng
+                else:
+                    return numbers[1][1][1] #return snum
+            else:
+                if z <= 19:
+                    return numbers[0][1][1] #return eng
+                else:
+                    return numbers[1][1][1] #return snum
+        elif status_1 == 1: #eng succeeded pfact
             return numbers[0][1][1]
-        if status_2 == 1:
+        elif status_2 == 1: #snum succeeded pfact
             return numbers[1][1][1]
         else:
             return 0
 
 
     def pfactorization(self, num):
-        #exception
-        if num == 16726708:
-            num = 46726708
-        if num ==32137965:
-            num = 82137965
-
         fact = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53]
         cal = []
         for f in fact:
@@ -85,10 +100,9 @@ class Solver:
         p = Pool(6)
         for _ in range(10**9):
             img = cv2.cvtColor(np.array(auto.screenshot(region = (175, 490, 470, 225))), cv2.COLOR_RGB2BGR)
-            #img.save(f'picture.png')
 
             langs = [('eng', img), ('snum', img)]
-            numbers = p.map(self.read_num_multi, langs)
+            numbers = p.map(self.read_num, langs)
             pfact = self.check(numbers)
 
             print(numbers[0][0], numbers[1][0])
@@ -99,10 +113,10 @@ class Solver:
             for i in range(16):
                 for _ in range(pfact[i]):
                     self.auto_click(i)
-                    sleep(0.09)
+                    sleep(0.07)
             auto.click(300, 600)
 
-            sleep(3.5)
+            sleep(3.3)
 
 
 #run

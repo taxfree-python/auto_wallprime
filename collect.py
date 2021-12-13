@@ -1,95 +1,83 @@
 #import
 import os
-from random import randint, choice
-from time import sleep, time
+from random import randint
+from time import sleep
 import re
-from PIL import Image,ImageOps
+from PIL import Image
 import pyocr
 import pyautogui as auto
-from collections import defaultdict
+from multiprocessing import Pool
+import cv2
+import numpy as np
 
 
-class create_data:
+class collect_auto:
 
     def __init__(self):
-        self.check_setting_file()
-        global index
-        index = self.read_index()
         self.run()
 
-
-    def __del__(self):
-        self.write_index_head(ind)
-        print('======================')
-        print(f'next_index = {ind + 1}')
-
-
-    def check_setting_file(self):
-        folders = os.scandir()
-        for folder in folders:
-            if folder.name == 'datum':
-                break
-        else:
-            os.mkdir('datum')
-            os.mkdir('datum/images')
-            with open('datum/number.txt', mode = 'w') as f:
-                f.write('0\n')
-
-
-    def write_index_head(self, num):
-        with open(f'datum/number.txt', mode = 'r+') as f:
-            f.write(f'{num}')
-
-    def write_index(self, text):
-        with open(f'datum/number.txt', mode = 'a') as f:
-            f.write(text)
-
-    def read_index(self):
-        with open(f'datum/number.txt') as f:
-            return int(f.readline())
-
-
-    def read_num(self, index):
-        #global pas
-        #start = time()
-
-
+    def read_num_multi(self, param):
         tool = pyocr.get_available_tools()[0]
 
-        img = auto.screenshot(region=(180, 498, 478, 225))
-        img.save(f'datum/images/image_{index}.png')
+        ret, img = cv2.threshold(param[1], 180, 255, cv2.THRESH_BINARY_INV)
 
-        img = img.point(lambda x: x * 1.2).convert('L').point(lambda x: 0 if x < 230 else x)
-        img = ImageOps.invert(img)
+        img = Image.fromarray(img)
+        num = int(re.sub(r'\D', '', tool.image_to_string(img, lang = f'{param[0]}', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8))) or 0)
 
-        num_eng = re.sub(r'\D', '', tool.image_to_string(img, lang = 'eng', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
-        num_snum  = re.sub(r'\D', '', tool.image_to_string(img, lang = 'snum', builder = pyocr.builders.DigitBuilder(tesseract_layout = 8)))
-
-        ans = (int(num_eng or 0), int(num_snum or 0))
-        print(ans)
-
-        #pas = time() - start
-        if ans[0] == 0 and ans[1] == 0:
-            return (0, ans)
-        elif ans[0] == 0: #一桁の数字で出やすい
-            return (2, ans)
-        elif ans[0] == 1 and ans[1] != 1:
-            return (2, ans)
-        elif ans[0] != ans[1] and ans[0] // 10 == ans[1]:
-            return (2, ans)
-        elif ans[0] != ans[1]:
-            c = choice(list(ans))
-            ans = (c, c)
-            return (1, ans)
+        if num == 0 or num >= 10 ** 10:
+            return (0, (0, [0]))
         else:
-            return (1, ans)
+            pfact = self.pfactorization(num)
+            if pfact[0] == 0 and num >= 10 ** 8:
+                if str(num)[0] == '1':
+                    num = int('4' + str(num)[1:])
+                elif str(num)[0] == '3':
+                    num = int('8' + str(num)[1:])
+                elif str(num)[0] == '2':
+                    num = int('3' + str(num)[1:])
+                elif str(num)[0] == '5':
+                    num = int('6' + str(num)[1:])
+
+            return (num, self.pfactorization(num))
 
 
     def auto_click(self, pos):
         x = [50, 105, 160, 215]
         y = [495, 545, 600, 650]
-        r = randint(-8, 8)
+        r = randint(-3, 3)
         auto.click(x[pos % 4] + r, y[pos // 4] + r)
+
+
+    def check(self, numbers):
+        status_1 = numbers[0][1][0]
+        status_2 =numbers[1][1][0]
+
+        if status_1 == status_2 and status_1 == 1: #both eng and snum succeeded pfact
+            length = max(len(str(numbers[0][0])), len(str(numbers[1][0])))
+            z = randint(1, 100)
+            print(numbers[0][0], numbers[1][0])
+            print(z)
+            if length <= 3:
+                if z <= 12:
+                    return numbers[0][1][1] #return eng
+                else:
+                    return numbers[1][1][1] #return snum
+            elif length <= 6:
+                if z <= 68:
+                    return numbers[0][1][1] #return eng
+                else:
+                    return numbers[1][1][1] #return snum
+            else:
+                if z <= 19:
+                    return numbers[0][1][1] #return eng
+                else:
+                    return numbers[1][1][1] #return snum
+        elif status_1 == 1: #eng succeeded pfact
+            return numbers[0][1][1]
+        elif status_2 == 1: #snum succeeded pfact
+            return numbers[1][1][1]
+        else:
+            return 0
 
 
     def pfactorization(self, num):
@@ -108,47 +96,34 @@ class create_data:
         else:
             return (0, cal)
 
+
     def run(self):
-        global ind
-        ind = index
-        while True:
-            start = time()
+        global index
+        index = 0
+        p = Pool(6)
+        for _ in range(10**9):
 
-            ind += 1
-            print('--------------------------')
-            auto.click(300,600)
-            res = self.read_num(ind)
-            num = res[1][res[0] - 1]
+            img = cv2.cvtColor(np.array(auto.screenshot(region = (175, 490, 470, 225))), cv2.COLOR_RGB2BGR)
+            langs = [('eng', img), ('snum', img)]
 
-            if res[0] == 0:
-                print('n = 0, failed recognize')
+            numbers = p.map(self.read_num_multi, langs)
+            pfact = self.check(numbers)
+
+            print(numbers[0][0], numbers[1][0])
+            if pfact == 0:
+                print('failed pfactorization')
                 continue
-
-            ans = self.pfactorization(num)
-            status = ans[0]
-            cal = ans[1]
-
-
-            if status == 0:
-                print(f'n = {num}, failed pfactorization')
-                sleep(0.1)
-                continue
-
-            pass_t = time() - start
-            print(pass_t)
-
             for i in range(16):
-                for _ in range(cal[i]):
+                for _ in range(pfact[i]):
                     self.auto_click(i)
-                    sleep(0.05)
+                    sleep(0.07)
             auto.click(300, 600)
+            index += 1 #ここにindexのインクリメントを書けば，詰んでも画像が増えない
 
-            self.write_index(f'{ind}, {num},\n')
+            sleep(3.3)
 
-            pass_time = time() - start
-            #print(f'index = {ind}, n = {num}, pass_time = {pass_time} ans = {ans[1]}')
-            sleep(3.5)
+
 
 #run
 if __name__ == "__main__":
-    create_data()
+    collect_auto()

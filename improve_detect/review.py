@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from read_num import read_num_img, read_num_path
 from PIL import Image
 from multiprocessing import Pool
 import pyocr
@@ -16,7 +15,6 @@ class Reviewer:
             corrects = [int(s) for s in f.readlines()]
 
         length = len(corrects)
-        score = [0, 0, 0, 0] #both, eng, snum, other
         index = [(num, i) for i in range(length)]
 
         if method == 0:
@@ -50,13 +48,14 @@ class Reviewer:
             ans_eng = p.map(self.read_num_img_eng_5, index)
             ans_snum = p.map(self.read_num_img_snum_5, index)
         elif method == 6:
-            p = Pool(2)
+            p = Pool(8)
             index = [(num, i, param) for i in range(length)]
             ans_eng = p.map(self.read_num_img_eng_6, index)
             ans_snum = p.map(self.read_num_img_snum_6, index)
 
 
         cnt = 0
+        score = [0, 0, 0, 0] #both, eng, snum, other
         for eng, snum, correct in zip(ans_eng, ans_snum, corrects):
             if eng == snum == correct:
                 score[0] += 1
@@ -65,16 +64,18 @@ class Reviewer:
             elif snum == correct:
                 score[2] += 1
             else:
+                print(cnt, ans_eng[cnt], ans_snum[cnt], corrects[cnt])
                 score[3] += 1
             cnt += 1
 
         fin = time.time()
         t = round(fin - start, 2)
 
+        '''
         with open(f'method_{method}.csv', 'a') as f:
             write = csv.writer(f)
             write.writerow([param, num] + score + [score[0] + score[1] + score[2], round((score[0] + score[1] + score[2]) / length * 100, 2)])
-
+        '''
         return t
 
     def read_num_img_eng_0(self, index):
@@ -269,12 +270,12 @@ class Reviewer:
 
 
 
-method = 5
+method = 6
 
 if __name__ == '__main__':
     rev = Reviewer()
-    for i in range(9, 10): #param
-        for j in range(1, 6): #dataset
+    for i in range(0, 1): #param
+        for j in range(2, 3): #dataset
             print(rev.review(method, i, j))
 
         with open(f'method_{method}.csv', 'a') as f:

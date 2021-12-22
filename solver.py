@@ -42,7 +42,7 @@ class Solver:
             return (num, self.pfactorization(num))
 
 
-    def auto_click(self, pos):
+    def click(self, pos):
         x = [50, 105, 160, 215]
         y = [495, 545, 600, 650]
         r = randint(-3, 3)
@@ -112,7 +112,7 @@ class Solver:
 
             for i in range(16):
                 for _ in range(pfact[i]):
-                    self.auto_click(i)
+                    self.click(i)
                     sleep(0.07)
             auto.click(300, 600)
 

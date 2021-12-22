@@ -130,7 +130,7 @@ class collect_auto:
                     sleep(0.07)
             auto.click(300, 600)
 
-            sleep(3.3)
+            sleep(3.4)
 
 
 

@@ -98,8 +98,7 @@ class collect_auto:
 
 
     def run(self):
-        global index
-        index = 0
+        index = [0, 0, 0]
         p = Pool(6)
         for _ in range(10**9):
 
@@ -113,12 +112,23 @@ class collect_auto:
             if pfact == 0:
                 print('failed pfactorization')
                 continue
+
+            length = min(len(str(numbers[0][0])), len(str(numbers[1][0])))
+            if length <= 3:
+                cv2.imwrite(f'data/dataset_1/{index[0]}.png', img)
+                index[0] += 1
+            elif length <= 6:
+                cv2.imwrite(f'data/dataset_2/{index[1]}.png', img)
+                index[1] += 1
+            else:
+                cv2.imwrite(f'data/dataset_3/{index[2]}.png', img)
+                index[2] += 1
+
             for i in range(16):
                 for _ in range(pfact[i]):
                     self.auto_click(i)
                     sleep(0.07)
             auto.click(300, 600)
-            index += 1 #ここにindexのインクリメントを書けば，詰んでも画像が増えない
 
             sleep(3.3)
 
